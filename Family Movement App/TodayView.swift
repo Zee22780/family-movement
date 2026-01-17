@@ -48,12 +48,20 @@ struct TodayView: View {
                         .font(.system(size: 16, weight: .light))
                         .foregroundColor(.gray)
                     
-                    Text("Your dedicated partner in creating a fitness habit for life!")
+                    Text("Your dedicated partner in maintaining a fitness habit for life!")
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.primary)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 60)
+                
+                Spacer(minLength: 12)
+                
+                Image("lionMascot")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: 450)
+                    .offset(y: 20)
                 
                 Spacer()
                 
