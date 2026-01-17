@@ -56,6 +56,21 @@ struct TodayView: View {
                 .padding(.top, 60)
                 
                 Spacer()
+                
+                // Bottom pill button
+                Button(action: {
+                    // Action placeholder
+                }) {
+                    Text("Let's Get Started!")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(Color.primaryBlue)
+                        .clipShape(Capsule())
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 40)
             }
         }
     }
