@@ -35,6 +35,8 @@ extension Color {
 }
 
 struct TodayView: View {
+    @AppStorage("todaySteps") private var todaySteps: Int = 0
+    
     var body: some View {
         ZStack {
             // Full-screen background
@@ -55,6 +57,9 @@ struct TodayView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 60)
                 
+                Text("\(todaySteps) steps today")
+                    .font(.system(size: 20, weight: .semibold))
+
                 Spacer(minLength: 12)
                 
                 Image("lionMascot")
@@ -66,9 +71,9 @@ struct TodayView: View {
                 Spacer()
                 
                 // Bottom pill button
-                Button(action: {
-                    // Action placeholder
-                }) {
+                NavigationLink {
+                    LogStepsView()
+                } label: {
                     Text("Let's Get Started!")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.white)
@@ -77,6 +82,7 @@ struct TodayView: View {
                         .background(Color.primaryBlue)
                         .clipShape(Capsule())
                 }
+
                 .padding(.horizontal, 20)
                 .padding(.bottom, 40)
             }
