@@ -57,8 +57,8 @@ struct TodayView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 60)
                 
-                Text("\(todaySteps) steps today")
-                    .font(.system(size: 20, weight: .semibold))
+//                Text("\(todaySteps) steps today")
+//                    .font(.system(size: 20, weight: .semibold))
 
                 Spacer(minLength: 12)
                 
