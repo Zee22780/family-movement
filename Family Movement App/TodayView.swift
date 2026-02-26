@@ -35,7 +35,37 @@ extension Color {
 }
 
 struct TodayView: View {
-    @AppStorage("todaySteps") private var todaySteps: Int = 0
+    @AppStorage("dailySteps") private var dailyStepsData: String = "{}"
+    @AppStorage("todaySteps") private var legacyTodaySteps: Int = 0
+    @State private var quickStepsText = ""
+    @FocusState private var quickStepsFocused: Bool
+    @State private var showToast = false
+
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar.current
+        formatter.locale = Locale.current
+        formatter.timeZone = TimeZone.current
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+
+    private var todayKey: String {
+        Self.dateFormatter.string(from: Date())
+    }
+
+    private var todaySteps: Int {
+        decodeDailySteps()[todayKey] ?? 0
+    }
+    
+    private var isQuickSaveEnabled: Bool {
+        guard !quickStepsText.isEmpty,
+              let steps = Int(quickStepsText),
+              steps > 0 else {
+            return false
+        }
+        return true
+    }
     
     var body: some View {
         ZStack {
@@ -46,35 +76,79 @@ struct TodayView: View {
             VStack(alignment: .leading, spacing: 0) {
                 // Top text block
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Hi, I'm Leo")
-                        .font(.system(size: 16, weight: .light))
-                        .foregroundColor(.gray)
+                    Text("Coach Leo here.")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.primary)
                     
-                    Text("Your dedicated partner in maintaining a fitness habit for life!")
+                    Text("Log today’s steps.")
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.primary)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 60)
                 
-//                Text("\(todaySteps) steps today")
-//                    .font(.system(size: 20, weight: .semibold))
+                if todaySteps > 0 {
+                    Text("Today: \(todaySteps) steps")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.primaryBlue)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 12)
+                }
 
                 Spacer(minLength: 12)
-                
+
+                VStack(spacing: 12) {
+                    TextField("Enter steps", text: $quickStepsText)
+                        .keyboardType(.numberPad)
+                        .textFieldStyle(.plain)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 12)
+                        .background(Color.white)
+                        .cornerRadius(10)
+                        .focused($quickStepsFocused)
+                        .padding(.horizontal, 20)
+                    
+                    Button(action: {
+                        if let steps = Int(quickStepsText), steps > 0 {
+                            var updated = decodeDailySteps()
+                            updated[todayKey] = steps
+                            dailyStepsData = encodeDailySteps(updated)
+                            legacyTodaySteps = steps
+                            quickStepsText = ""
+                            quickStepsFocused = false
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                showToast = true
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+                                withAnimation(.easeIn(duration: 0.2)) {
+                                    showToast = false
+                                }
+                            }
+                        }
+                    }) {
+                        Text("Log Steps")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(isQuickSaveEnabled ? Color.primaryBlue : Color.gray.opacity(0.3))
+                            .clipShape(Capsule())
+                    }
+                    .disabled(!isQuickSaveEnabled)
+                    .padding(.horizontal, 20)
+                }
+
                 Image("lionMascot")
                     .resizable()
                     .scaledToFit()
-                    .frame(maxWidth: 450)
-                    .offset(y: 20)
-                
-                Spacer()
-                
+                    .frame(maxWidth: 380)
+                    .offset(y: 10)
+
                 // Bottom pill button
                 NavigationLink {
-                    LogStepsView()
+                    StatsView()
                 } label: {
-                    Text("Let's Get Started!")
+                    Text("Stats")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -84,14 +158,53 @@ struct TodayView: View {
                 }
 
                 .padding(.horizontal, 20)
-                .padding(.bottom, 40)
+                .padding(.bottom, 32)
+            }
+            
+            if showToast {
+                VStack {
+                    Spacer()
+                    Text("Locked in. Nice work.")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(Color.teal)
+                        .cornerRadius(12)
+                        .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
+                        .padding(.bottom, 90)
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
+        .onAppear {
+            if legacyTodaySteps > 0 {
+                let current = decodeDailySteps()
+                if current[todayKey] == nil {
+                    var updated = current
+                    updated[todayKey] = legacyTodaySteps
+                    dailyStepsData = encodeDailySteps(updated)
+                }
+            }
+        }
+    }
+    
+    private func decodeDailySteps() -> [String: Int] {
+        guard let data = dailyStepsData.data(using: .utf8) else {
+            return [:]
+        }
+        return (try? JSONDecoder().decode([String: Int].self, from: data)) ?? [:]
+    }
+    
+    private func encodeDailySteps(_ steps: [String: Int]) -> String {
+        guard let data = try? JSONEncoder().encode(steps),
+              let json = String(data: data, encoding: .utf8) else {
+            return "{}"
+        }
+        return json
     }
 }
 
 #Preview {
     TodayView()
 }
-
-
