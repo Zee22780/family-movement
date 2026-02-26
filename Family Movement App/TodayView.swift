@@ -95,7 +95,7 @@ struct TodayView: View {
                         .padding(.top, 12)
                 }
 
-                Spacer(minLength: 12)
+                Spacer(minLength: 8)
 
                 VStack(spacing: 12) {
                     TextField("Enter steps", text: $quickStepsText)
@@ -106,6 +106,11 @@ struct TodayView: View {
                         .background(Color.white)
                         .cornerRadius(10)
                         .focused($quickStepsFocused)
+                        .padding(.horizontal, 20)
+                    
+                    Text("Updates today’s total.")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.gray)
                         .padding(.horizontal, 20)
                     
                     Button(action: {
@@ -137,12 +142,18 @@ struct TodayView: View {
                     .disabled(!isQuickSaveEnabled)
                     .padding(.horizontal, 20)
                 }
+                .padding(.top, 8)
+
+                Spacer(minLength: 6)
 
                 Image("lionMascot")
                     .resizable()
                     .scaledToFit()
-                    .frame(maxWidth: 380)
-                    .offset(y: 10)
+                    .frame(maxWidth: 420)
+                    .offset(y: 0)
+                    .padding(.vertical, 4)
+
+                Spacer(minLength: 16)
 
                 // Bottom pill button
                 NavigationLink {
