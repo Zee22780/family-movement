@@ -80,9 +80,12 @@ struct TodayView: View {
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(.primary)
                     
-                    Text("Log today’s steps.")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(.primary)
+                    TypewriterText(
+                        text: "Log today’s steps.",
+                        speed: 0.04,
+                        font: .system(size: 28, weight: .bold),
+                        color: .primary
+                    )
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 60)
@@ -140,6 +143,7 @@ struct TodayView: View {
                             .clipShape(Capsule())
                     }
                     .disabled(!isQuickSaveEnabled)
+                    .buttonStyle(PressDarkenStyle())
                     .padding(.horizontal, 20)
                 }
                 .padding(.top, 8)
@@ -167,6 +171,7 @@ struct TodayView: View {
                         .background(Color.primaryBlue)
                         .clipShape(Capsule())
                 }
+                .buttonStyle(PressDarkenStyle())
 
                 .padding(.horizontal, 20)
                 .padding(.bottom, 32)
@@ -213,6 +218,53 @@ struct TodayView: View {
             return "{}"
         }
         return json
+    }
+}
+
+struct TypewriterText: View {
+    let text: String
+    let speed: Double
+    let font: Font
+    let color: Color
+
+    @State private var displayedText = ""
+    @State private var timer: Timer?
+
+    var body: some View {
+        Text(displayedText)
+            .font(font)
+            .foregroundColor(color)
+            .onAppear {
+                startTyping()
+            }
+            .onDisappear {
+                timer?.invalidate()
+                timer = nil
+            }
+    }
+
+    private func startTyping() {
+        displayedText = ""
+        timer?.invalidate()
+        let characters = Array(text)
+        var index = 0
+        timer = Timer.scheduledTimer(withTimeInterval: speed, repeats: true) { currentTimer in
+            if index < characters.count {
+                displayedText.append(characters[index])
+                index += 1
+            } else {
+                currentTimer.invalidate()
+            }
+        }
+    }
+}
+
+struct PressDarkenStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .brightness(configuration.isPressed ? -0.1 : 0)
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
 }
 
